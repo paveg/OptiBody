@@ -6,7 +6,7 @@ import { hashPassword, lucia } from "~/lib/auth";
 import { db } from "~/lib/database";
 import { users } from "~/lib/database/schema";
 
-export const Route = createAPIFileRoute("/api/auth/signup")({
+export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 	POST: async ({ request }) => {
 		try {
 			const body = await request.json();
