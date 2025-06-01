@@ -2,7 +2,7 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
 import { lucia } from "~/lib/auth";
 
-export const Route = createAPIFileRoute("/api/auth/logout")({
+export const APIRoute = createAPIFileRoute("/api/auth/logout")({
 	POST: async ({ request }) => {
 		const sessionId = lucia.readSessionCookie(
 			request.headers.get("cookie") ?? "",

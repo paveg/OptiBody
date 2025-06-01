@@ -5,7 +5,7 @@ import { lucia, verifyPassword } from "~/lib/auth";
 import { db } from "~/lib/database";
 import { users } from "~/lib/database/schema";
 
-export const Route = createAPIFileRoute("/api/auth/login")({
+export const APIRoute = createAPIFileRoute("/api/auth/login")({
 	POST: async ({ request }) => {
 		try {
 			const body = await request.json();
