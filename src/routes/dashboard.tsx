@@ -1,6 +1,6 @@
-import { Button } from "~/components/ui/button";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Button } from "~/components/ui/button";
 import { useAuth } from "~/hooks/auth";
 
 export const Route = createFileRoute("/dashboard")({
