@@ -1,5 +1,7 @@
 name = "optibody"
 compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
 
 # D1 Database bindings for production
 [[d1_databases]]
@@ -8,6 +10,7 @@ database_name = "optibody-db-prod"
 database_id = "e44df8df-b756-45e0-a499-bc4784b41bcd"
 
 [env.preview]
+compatibility_flags = ["nodejs_compat"]
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "optibody-db-preview"
