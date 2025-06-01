@@ -1,16 +1,25 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useSignup } from "~/hooks/auth";
 
 export const Route = createFileRoute("/auth/signup")({
 	component: SignupPage,
 });
 
 function SignupPage() {
-	const navigate = useNavigate();
+	const signupMutation = useSignup();
 	const [formData, setFormData] = useState({
 		email: "",
 		username: "",
@@ -18,7 +27,6 @@ function SignupPage() {
 		confirmPassword: "",
 	});
 	const [errors, setErrors] = useState<Record<string, string>>({});
-	const [isLoading, setIsLoading] = useState(false);
 
 	const validateForm = (): boolean => {
 		const newErrors: Record<string, string> = {};
@@ -58,58 +66,65 @@ function SignupPage() {
 
 		if (!validateForm()) return;
 
-		setIsLoading(true);
 		setErrors({});
-
-		try {
-			const response = await fetch("/api/auth/signup", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
+		signupMutation.mutate(
+			{
+				email: formData.email,
+				username: formData.username,
+				password: formData.password,
+			},
+			{
+				onError: (error) => {
+					const errorMessage = error.message;
+					if (errorMessage.includes("email:")) {
+						setErrors({ email: errorMessage.replace("email: ", "") });
+					} else if (errorMessage.includes("username:")) {
+						setErrors({ username: errorMessage.replace("username: ", "") });
+					} else {
+						setErrors({ general: errorMessage });
+					}
 				},
-				body: JSON.stringify({
-					email: formData.email,
-					username: formData.username,
-					password: formData.password,
-				}),
-			});
-
-			const result = await response.json();
-
-			if (!response.ok) {
-				if (result.field) {
-					setErrors({ [result.field]: result.message });
-				} else {
-					setErrors({
-						general: result.message || "アカウント作成に失敗しました",
-					});
-				}
-				return;
-			}
-
-			// 登録成功後、ダッシュボードへリダイレクト
-			navigate({ to: "/dashboard" });
-		} catch (error) {
-			setErrors({ general: "ネットワークエラーが発生しました" });
-		} finally {
-			setIsLoading(false);
-		}
+			},
+		);
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-			<div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-				<h1 className="text-2xl font-bold text-center mb-6">新規登録</h1>
+		<div className="container mx-auto max-w-md px-4 py-16">
+			<div className="mb-6">
+				<Breadcrumb>
+					<BreadcrumbList>
+						<BreadcrumbItem>
+							<BreadcrumbLink asChild>
+								<Link to="/">OptiBody</Link>
+							</BreadcrumbLink>
+						</BreadcrumbItem>
+						<BreadcrumbSeparator />
+						<BreadcrumbItem>
+							<BreadcrumbPage>新規登録</BreadcrumbPage>
+						</BreadcrumbItem>
+					</BreadcrumbList>
+				</Breadcrumb>
+			</div>
+
+			<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+				<div className="text-center mb-6">
+					<h1 className="text-2xl font-bold mb-2">新規登録</h1>
+					<p className="text-muted-foreground text-sm">
+						新しいアカウントを作成してください
+					</p>
+				</div>
 
 				{errors.general && (
-					<div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm">
-						{errors.general}
+					<div className="rounded-md border border-destructive bg-destructive/10 p-3 mb-6">
+						<p className="text-sm text-destructive">{errors.general}</p>
 					</div>
 				)}
 
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div>
-						<Label htmlFor="email">メールアドレス</Label>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					<div className="space-y-2">
+						<Label htmlFor="email" className="text-sm font-medium">
+							メールアドレス
+						</Label>
 						<Input
 							id="email"
 							type="email"
@@ -117,17 +132,19 @@ function SignupPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, email: e.target.value })
 							}
-							className={errors.email ? "border-red-500" : ""}
-							placeholder="user@example.com"
-							disabled={isLoading}
+							className={`h-12 ${errors.email ? "border-destructive" : ""}`}
+							placeholder="例: user@example.com"
+							disabled={signupMutation.isPending}
 						/>
 						{errors.email && (
-							<p className="text-red-500 text-sm mt-1">{errors.email}</p>
+							<p className="text-sm text-destructive">{errors.email}</p>
 						)}
 					</div>
 
-					<div>
-						<Label htmlFor="username">ユーザー名</Label>
+					<div className="space-y-2">
+						<Label htmlFor="username" className="text-sm font-medium">
+							ユーザー名
+						</Label>
 						<Input
 							id="username"
 							type="text"
@@ -135,17 +152,19 @@ function SignupPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, username: e.target.value })
 							}
-							className={errors.username ? "border-red-500" : ""}
-							placeholder="user123"
-							disabled={isLoading}
+							className={`h-12 ${errors.username ? "border-destructive" : ""}`}
+							placeholder="例: user123"
+							disabled={signupMutation.isPending}
 						/>
 						{errors.username && (
-							<p className="text-red-500 text-sm mt-1">{errors.username}</p>
+							<p className="text-sm text-destructive">{errors.username}</p>
 						)}
 					</div>
 
-					<div>
-						<Label htmlFor="password">パスワード</Label>
+					<div className="space-y-2">
+						<Label htmlFor="password" className="text-sm font-medium">
+							パスワード
+						</Label>
 						<Input
 							id="password"
 							type="password"
@@ -153,17 +172,19 @@ function SignupPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, password: e.target.value })
 							}
-							className={errors.password ? "border-red-500" : ""}
+							className={`h-12 ${errors.password ? "border-destructive" : ""}`}
 							placeholder="••••••••"
-							disabled={isLoading}
+							disabled={signupMutation.isPending}
 						/>
 						{errors.password && (
-							<p className="text-red-500 text-sm mt-1">{errors.password}</p>
+							<p className="text-sm text-destructive">{errors.password}</p>
 						)}
 					</div>
 
-					<div>
-						<Label htmlFor="confirmPassword">パスワード（確認）</Label>
+					<div className="space-y-2">
+						<Label htmlFor="confirmPassword" className="text-sm font-medium">
+							パスワード（確認）
+						</Label>
 						<Input
 							id="confirmPassword"
 							type="password"
@@ -171,28 +192,32 @@ function SignupPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, confirmPassword: e.target.value })
 							}
-							className={errors.confirmPassword ? "border-red-500" : ""}
+							className={`h-12 ${errors.confirmPassword ? "border-destructive" : ""}`}
 							placeholder="••••••••"
-							disabled={isLoading}
+							disabled={signupMutation.isPending}
 						/>
 						{errors.confirmPassword && (
-							<p className="text-red-500 text-sm mt-1">
+							<p className="text-sm text-destructive">
 								{errors.confirmPassword}
 							</p>
 						)}
 					</div>
 
-					<Button type="submit" className="w-full" disabled={isLoading}>
-						{isLoading ? "登録中..." : "アカウント作成"}
+					<Button
+						type="submit"
+						className="w-full h-12 text-base"
+						disabled={signupMutation.isPending}
+					>
+						{signupMutation.isPending ? "登録中..." : "アカウント作成"}
 					</Button>
 				</form>
 
-				<div className="mt-6 text-center text-sm">
-					<p className="text-gray-600">
+				<div className="mt-6 text-center">
+					<p className="text-sm text-muted-foreground">
 						既にアカウントをお持ちの方は
 						<Link
 							to="/auth/login"
-							className="text-blue-600 hover:underline ml-1"
+							className="text-primary hover:underline ml-1 font-medium"
 						>
 							ログイン
 						</Link>

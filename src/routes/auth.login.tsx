@@ -1,22 +1,30 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useLogin } from "~/hooks/auth";
 
 export const Route = createFileRoute("/auth/login")({
 	component: LoginPage,
 });
 
 function LoginPage() {
-	const navigate = useNavigate();
+	const loginMutation = useLogin();
 	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
 	});
 	const [errors, setErrors] = useState<Record<string, string>>({});
-	const [isLoading, setIsLoading] = useState(false);
 
 	const validateForm = (): boolean => {
 		const newErrors: Record<string, string> = {};
@@ -40,48 +48,51 @@ function LoginPage() {
 
 		if (!validateForm()) return;
 
-		setIsLoading(true);
 		setErrors({});
-
-		try {
-			const response = await fetch("/api/auth/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(formData),
-			});
-
-			const result = await response.json();
-
-			if (!response.ok) {
-				setErrors({ general: result.message || "ログインに失敗しました" });
-				return;
-			}
-
-			// ログイン成功後、ダッシュボードへリダイレクト
-			navigate({ to: "/dashboard" });
-		} catch (error) {
-			setErrors({ general: "ネットワークエラーが発生しました" });
-		} finally {
-			setIsLoading(false);
-		}
+		loginMutation.mutate(formData, {
+			onError: (error) => {
+				setErrors({ general: error.message });
+			},
+		});
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-			<div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-				<h1 className="text-2xl font-bold text-center mb-6">ログイン</h1>
+		<div className="container mx-auto max-w-md px-4 py-16">
+			<div className="mb-6">
+				<Breadcrumb>
+					<BreadcrumbList>
+						<BreadcrumbItem>
+							<BreadcrumbLink asChild>
+								<Link to="/">OptiBody</Link>
+							</BreadcrumbLink>
+						</BreadcrumbItem>
+						<BreadcrumbSeparator />
+						<BreadcrumbItem>
+							<BreadcrumbPage>ログイン</BreadcrumbPage>
+						</BreadcrumbItem>
+					</BreadcrumbList>
+				</Breadcrumb>
+			</div>
+
+			<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+				<div className="text-center mb-6">
+					<h1 className="text-2xl font-bold mb-2">ログイン</h1>
+					<p className="text-muted-foreground text-sm">
+						アカウントにログインしてください
+					</p>
+				</div>
 
 				{errors.general && (
-					<div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm">
-						{errors.general}
+					<div className="rounded-md border border-destructive bg-destructive/10 p-3 mb-6">
+						<p className="text-sm text-destructive">{errors.general}</p>
 					</div>
 				)}
 
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div>
-						<Label htmlFor="email">メールアドレス</Label>
+				<form onSubmit={handleSubmit} className="space-y-6">
+					<div className="space-y-2">
+						<Label htmlFor="email" className="text-sm font-medium">
+							メールアドレス
+						</Label>
 						<Input
 							id="email"
 							type="email"
@@ -89,17 +100,19 @@ function LoginPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, email: e.target.value })
 							}
-							className={errors.email ? "border-red-500" : ""}
-							placeholder="user@example.com"
-							disabled={isLoading}
+							className={`h-12 ${errors.email ? "border-destructive" : ""}`}
+							placeholder="例: user@example.com"
+							disabled={loginMutation.isPending}
 						/>
 						{errors.email && (
-							<p className="text-red-500 text-sm mt-1">{errors.email}</p>
+							<p className="text-sm text-destructive">{errors.email}</p>
 						)}
 					</div>
 
-					<div>
-						<Label htmlFor="password">パスワード</Label>
+					<div className="space-y-2">
+						<Label htmlFor="password" className="text-sm font-medium">
+							パスワード
+						</Label>
 						<Input
 							id="password"
 							type="password"
@@ -107,26 +120,30 @@ function LoginPage() {
 							onChange={(e) =>
 								setFormData({ ...formData, password: e.target.value })
 							}
-							className={errors.password ? "border-red-500" : ""}
+							className={`h-12 ${errors.password ? "border-destructive" : ""}`}
 							placeholder="••••••••"
-							disabled={isLoading}
+							disabled={loginMutation.isPending}
 						/>
 						{errors.password && (
-							<p className="text-red-500 text-sm mt-1">{errors.password}</p>
+							<p className="text-sm text-destructive">{errors.password}</p>
 						)}
 					</div>
 
-					<Button type="submit" className="w-full" disabled={isLoading}>
-						{isLoading ? "ログイン中..." : "ログイン"}
+					<Button
+						type="submit"
+						className="w-full h-12 text-base"
+						disabled={loginMutation.isPending}
+					>
+						{loginMutation.isPending ? "ログイン中..." : "ログイン"}
 					</Button>
 				</form>
 
-				<div className="mt-6 text-center text-sm">
-					<p className="text-gray-600">
+				<div className="mt-6 text-center">
+					<p className="text-sm text-muted-foreground">
 						アカウントをお持ちでない方は
 						<Link
 							to="/auth/signup"
-							className="text-blue-600 hover:underline ml-1"
+							className="text-primary hover:underline ml-1 font-medium"
 						>
 							新規登録
 						</Link>
