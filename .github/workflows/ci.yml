@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     name: Lint, Format Check & Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -39,9 +44,15 @@ jobs:
       - name: Build application
         run: pnpm build
         
+      - name: Check build output
+        run: |
+          echo "Build output structure:"
+          ls -la .vinxi/ || echo ".vinxi directory not found"
+          ls -la .output/ || echo ".output directory not found"
+          
       - name: Security check - Verify no secrets in build
         run: |
-          if grep -r "dev-secret-change-in-production" .vinxi/build/ 2>/dev/null; then
+          if grep -r "dev-secret-change-in-production" .vinxi/ 2>/dev/null; then
             echo "❌ Default secret found in build output!"
             exit 1
           fi
@@ -52,6 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      deployments: write
     
     steps:
       - name: Checkout code
@@ -72,9 +86,15 @@ jobs:
       - name: Build application
         run: pnpm build
 
+      - name: Check build output for deployment
+        run: |
+          echo "Checking deployment directory:"
+          ls -la .vinxi/prerender/client/ || echo ".vinxi/prerender/client directory not found"
+          ls -la .output/public/ || echo ".output/public directory not found"
+          
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .output/public --project-name=optibody --compatibility-date=2024-12-01
+          command: pages deploy .vinxi/prerender/client --project-name=optibody --compatibility-date=2024-12-01
