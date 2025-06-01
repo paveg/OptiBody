@@ -13,10 +13,16 @@ const config = defineConfig({
     rollupConfig: {
       external: ['better-sqlite3'],
     },
+    // Nitro config for Cloudflare Pages
     nitro: {
-      compatibilityFlags: ['nodejs_compat'],
       compatibilityDate: '2024-12-01',
-    },
+      // Enable Node.js compatibility
+      cloudflare: {
+        wrangler: {
+          compatibility_flags: ['nodejs_compat'],
+        }
+      }
+    }
   },
   vite: {
     plugins: [
