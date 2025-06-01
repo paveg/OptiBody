@@ -8,6 +8,8 @@
     "build": "vinxi build",
     "serve": "vite preview",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
@@ -63,15 +65,18 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/ui": "^3.1.4",
     "jsdom": "^26.0.0",
     "tsx": "^4.19.4",
     "typescript": "^5.7.2",
     "vite": "^6.1.0",
     "vitest": "^3.0.5",
+    "vitest-mock-extended": "^3.1.0",
     "web-vitals": "^4.2.4"
   },
   "packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a"
