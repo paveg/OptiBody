@@ -26,5 +26,5 @@ database_id = "082869c0-603e-4952-b14d-2bc479e07c3c"
 # Required: SESSION_SECRET, NODE_ENV=production
 
 # Cloudflare Pages configuration
-pages_build_output_dir = ".vinxi/build/client"
+pages_build_output_dir = "dist"
 

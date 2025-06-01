@@ -89,13 +89,13 @@ jobs:
       - name: Check build output for deployment
         run: |
           echo "Checking deployment directory:"
-          ls -la .vinxi/build/client/ || echo ".vinxi/build/client directory not found"
-          ls -la .vinxi/prerender/client/ || echo ".vinxi/prerender/client directory not found"
+          ls -la dist/ || echo "dist directory not found"
           ls -la .output/public/ || echo ".output/public directory not found"
+          ls -la .vinxi/build/client/ || echo ".vinxi/build/client directory not found"
           
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .vinxi/build/client --project-name=optibody --compatibility-date=2024-12-01
+          command: pages deploy dist --project-name=optibody --compatibility-date=2024-12-01
