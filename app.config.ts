@@ -10,24 +10,6 @@ const config = defineConfig({
   server: {
     preset: 'cloudflare-pages',
     unenv: cloudflare,
-    rollupConfig: {
-      external: ['better-sqlite3'],
-    },
-    nitro: {
-      preset: 'cloudflare-pages',
-      compatibilityDate: '2024-12-01',
-      wasm: {
-        esmImport: true
-      },
-      experimental: {
-        wasm: true
-      },
-      cloudflare: {
-        wrangler: {
-          compatibility_flags: ['nodejs_compat']
-        }
-      }
-    }
   },
   vite: {
     plugins: [
@@ -38,9 +20,7 @@ const config = defineConfig({
       tailwindcss(),
     ],
     build: {
-      rollupOptions: {
-        external: ['better-sqlite3'],
-      },
+      rollupOptions: {},
     },
   },
 })

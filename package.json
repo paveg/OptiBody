@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run db:init-local && vinxi dev",
+    "dev": "vinxi dev",
     "start": "vinxi start",
     "build": "vinxi build",
     "serve": "vite preview",
@@ -19,7 +19,6 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --config=drizzle.config.local.ts",
     "db:studio:remote": "drizzle-kit studio",
-    "db:init-local": "tsx scripts/init-local-db.ts",
     "db:up": "docker compose up -d",
     "db:init": "tsx scripts/init-db.ts"
   },
@@ -46,8 +45,6 @@
     "@trpc/client": "^11.0.0",
     "@trpc/server": "^11.0.0",
     "@trpc/tanstack-react-query": "^11.0.0",
-    "argon2": "^0.43.0",
-    "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
@@ -71,7 +68,6 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
