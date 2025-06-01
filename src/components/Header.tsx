@@ -1,21 +1,25 @@
-import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
+import { useAuth, useLogout } from "~/hooks/auth";
 
 export default function Header() {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
+	const location = useLocation();
+	const { data: authData, isLoading } = useAuth();
+	const logoutMutation = useLogout();
 
-	useEffect(() => {
-		// 認証状態をチェック
-		fetch("/api/auth/me")
-			.then((res) => {
-				setIsAuthenticated(res.ok);
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
-	}, []);
+	// 認証ページではヘッダーを非表示
+	if (
+		location.pathname === "/auth/login" ||
+		location.pathname === "/auth/signup"
+	) {
+		return null;
+	}
+
+	const isAuthenticated = !!authData?.user;
+
+	const handleLogout = () => {
+		logoutMutation.mutate();
+	};
 
 	return (
 		<header className="bg-white shadow-sm border-b">
@@ -24,37 +28,27 @@ export default function Header() {
 					<div className="flex items-center">
 						<Link
 							to="/"
-							className="text-xl font-bold text-blue-600 hover:text-blue-700"
+							className="text-xl font-bold text-primary hover:shadow-md"
 						>
 							OptiBody
 						</Link>
 					</div>
 
 					<div className="flex items-center gap-6">
-						<Link
-							to="/"
-							className="text-gray-700 hover:text-blue-600 transition-colors"
-							activeProps={{ className: "text-blue-600 font-semibold" }}
-						>
-							ホーム
-						</Link>
-						<Link
-							to="/calculator"
-							className="text-gray-700 hover:text-blue-600 transition-colors"
-							activeProps={{ className: "text-blue-600 font-semibold" }}
-						>
-							計算機
-						</Link>
-
 						{!isLoading &&
 							(isAuthenticated ? (
-								<Link
-									to="/dashboard"
-									className="text-gray-700 hover:text-blue-600 transition-colors"
-									activeProps={{ className: "text-blue-600 font-semibold" }}
-								>
-									ダッシュボード
-								</Link>
+								<div className="flex items-center gap-4">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={handleLogout}
+										disabled={logoutMutation.isPending}
+									>
+										{logoutMutation.isPending
+											? "ログアウト中..."
+											: "ログアウト"}
+									</Button>
+								</div>
 							) : (
 								<div className="flex items-center gap-2">
 									<Link to="/auth/login">
