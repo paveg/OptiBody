@@ -13,6 +13,10 @@ const config = defineConfig({
     rollupConfig: {
       external: ['better-sqlite3'],
     },
+    nitro: {
+      compatibilityFlags: ['nodejs_compat'],
+      compatibilityDate: '2024-12-01',
+    },
   },
   vite: {
     plugins: [
