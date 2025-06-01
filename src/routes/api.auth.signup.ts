@@ -87,7 +87,16 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 			});
 		} catch (error) {
 			console.error("Signup error:", error);
-			return createErrorResponse("サーバーエラーが発生しました", 500);
+			// 開発中のデバッグ用: 詳細なエラー情報を返す
+			return new Response(JSON.stringify({
+				success: false,
+				message: "サーバーエラーが発生しました",
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined
+			}), {
+				status: 500,
+				headers: { "Content-Type": "application/json" }
+			});
 		}
 	},
 });
