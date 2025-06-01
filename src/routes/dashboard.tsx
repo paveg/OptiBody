@@ -1,114 +1,62 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "~/hooks/auth";
 
 export const Route = createFileRoute("/dashboard")({
 	component: DashboardPage,
 });
 
-interface UserInfo {
-	email: string;
-	username: string;
-}
-
 function DashboardPage() {
 	const navigate = useNavigate();
-	const [user, setUser] = useState<UserInfo | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+	const { data: authData, isLoading, error } = useAuth();
 
+	// 認証エラーの場合はログインページにリダイレクト
 	useEffect(() => {
-		// ユーザー情報を取得
-		fetch("/api/auth/me")
-			.then((res) => {
-				if (!res.ok) {
-					throw new Error("Unauthorized");
-				}
-				return res.json();
-			})
-			.then((data) => {
-				setUser(data.user);
-			})
-			.catch(() => {
-				// 未認証の場合はログインページへリダイレクト
-				navigate({ to: "/auth/login" });
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
-	}, [navigate]);
-
-	const handleLogout = async () => {
-		try {
-			const response = await fetch("/api/auth/logout", {
-				method: "POST",
-			});
-
-			if (response.ok) {
-				navigate({ to: "/" });
-			}
-		} catch (error) {
-			console.error("Logout error:", error);
+		if (error && !isLoading) {
+			navigate({ to: "/auth/login" });
 		}
-	};
+	}, [error, isLoading, navigate]);
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-gray-600">読み込み中...</div>
+			<div className="container mx-auto max-w-4xl px-4 py-6 flex items-center justify-center min-h-screen">
+				<div className="text-muted-foreground">読み込み中...</div>
 			</div>
 		);
 	}
 
-	if (!user) {
+	if (error || !authData?.user) {
 		return null;
 	}
 
+	const user = authData.user;
+
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<div className="bg-white shadow-sm">
-				<div className="container mx-auto px-4 py-4">
-					<div className="flex items-center justify-between">
-						<h1 className="text-xl font-semibold">ダッシュボード</h1>
-						<Button onClick={handleLogout} variant="outline" size="sm">
-							ログアウト
-						</Button>
-					</div>
-				</div>
+		<div className="container mx-auto max-w-2xl px-4 py-16">
+			<div className="text-center mb-8">
+				<h1 className="text-3xl font-bold mb-4">ダッシュボード</h1>
+				<p className="text-muted-foreground mb-8">
+					こんにちは、{user.username}さん
+				</p>
 			</div>
 
-			<div className="container mx-auto px-4 py-8">
-				<div className="bg-white rounded-lg shadow-md p-6 mb-6">
-					<h2 className="text-lg font-semibold mb-4">プロフィール</h2>
-					<div className="space-y-2">
-						<p className="text-gray-700">
-							<span className="font-medium">ユーザー名:</span> {user.username}
-						</p>
-						<p className="text-gray-700">
-							<span className="font-medium">メールアドレス:</span> {user.email}
-						</p>
+			<div className="rounded-lg border bg-card text-card-foreground shadow-sm p-8 text-center">
+				<div className="mb-6">
+					<div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+						<span className="text-2xl">🚧</span>
 					</div>
+					<h2 className="text-xl font-semibold mb-2">機能開発中</h2>
+					<p className="text-muted-foreground text-sm">
+						ダッシュボード機能は現在開発中です。
+						<br />
+						計算機能はホームページからご利用いただけます。
+					</p>
 				</div>
 
-				<div className="grid md:grid-cols-2 gap-6">
-					<Link
-						to="/calculator"
-						className="block bg-blue-50 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-					>
-						<h3 className="text-lg font-semibold mb-2 text-blue-900">
-							BMR & TDEE計算機
-						</h3>
-						<p className="text-gray-700">
-							基礎代謝率と総消費エネルギーを計算して、最適なカロリー摂取量を把握しましょう。
-						</p>
-					</Link>
-
-					<div className="bg-gray-50 rounded-lg shadow-md p-6">
-						<h3 className="text-lg font-semibold mb-2 text-gray-900">
-							履歴管理
-						</h3>
-						<p className="text-gray-600">計算履歴の保存機能は準備中です。</p>
-					</div>
-				</div>
+				<Link to="/">
+					<Button className="h-12">ホームに戻る</Button>
+				</Link>
 			</div>
 		</div>
 	);
