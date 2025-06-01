@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { eq, or } from "drizzle-orm";
 import { generateId } from "lucia";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
+import { hashPassword, lucia, verifyPassword } from "~/lib/auth";
+import { validateRequest } from "~/lib/auth/middleware";
 import { db } from "~/lib/database";
 import { users } from "~/lib/database/schema";
-import { lucia, hashPassword, verifyPassword } from "~/lib/auth";
-import { validateRequest } from "~/lib/auth/middleware";
-import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
 
 // Mock the database
 vi.mock("~/lib/database", () => ({
@@ -51,7 +51,11 @@ describe("Auth API Logic Tests", () => {
 	});
 
 	describe("Signup Logic", () => {
-		const signupLogic = async (body: any) => {
+		const signupLogic = async (body: {
+			email?: string;
+			username?: string;
+			password?: string;
+		}) => {
 			const { email, username, password } = body;
 
 			// Validation
@@ -105,7 +109,7 @@ describe("Auth API Logic Tests", () => {
 			// Hash password and create user
 			const hashedPassword = await mockHashPassword(password);
 			const userId = mockGenerateId(15);
-			
+
 			await mockDb.insert(users).values({
 				id: userId,
 				email: email.toLowerCase(),
@@ -130,19 +134,21 @@ describe("Auth API Logic Tests", () => {
 						limit: vi.fn().mockResolvedValue([]),
 					}),
 				}),
-			} as any);
+			} as unknown);
 
 			mockDb.insert.mockReturnValue({
 				values: vi.fn().mockResolvedValue(undefined),
-			} as any);
+			} as unknown);
 
 			// Mock auth functions
 			mockHashPassword.mockResolvedValue("hashed_password");
 			mockGenerateId.mockReturnValue("test_user_id");
-			mockLucia.createSession.mockResolvedValue({ id: "session_id" } as any);
+			mockLucia.createSession.mockResolvedValue({
+				id: "session_id",
+			} as unknown);
 			mockLucia.createSessionCookie.mockReturnValue({
 				serialize: () => "session=abc123",
-			} as any);
+			} as unknown);
 
 			const response = await signupLogic({
 				email: "test@example.com",
@@ -188,7 +194,9 @@ describe("Auth API Logic Tests", () => {
 
 			expect(response.status).toBe(400);
 			const data = await response.json();
-			expect(data.message).toBe("ユーザー名は英数字とアンダースコアのみ使用できます");
+			expect(data.message).toBe(
+				"ユーザー名は英数字とアンダースコアのみ使用できます",
+			);
 			expect(data.field).toBe("username");
 		});
 
@@ -197,12 +205,14 @@ describe("Auth API Logic Tests", () => {
 			mockDb.select.mockReturnValue({
 				from: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
-						limit: vi.fn().mockResolvedValue([
-							{ email: "test@example.com", username: "otheruser" },
-						]),
+						limit: vi
+							.fn()
+							.mockResolvedValue([
+								{ email: "test@example.com", username: "otheruser" },
+							]),
 					}),
 				}),
-			} as any);
+			} as unknown);
 
 			const response = await signupLogic({
 				email: "test@example.com",
@@ -218,7 +228,7 @@ describe("Auth API Logic Tests", () => {
 	});
 
 	describe("Login Logic", () => {
-		const loginLogic = async (body: any) => {
+		const loginLogic = async (body: { email?: string; password?: string }) => {
 			const { email, password } = body;
 
 			if (!email || !password) {
@@ -243,7 +253,7 @@ describe("Auth API Logic Tests", () => {
 				password,
 				user[0].hashedPassword,
 			);
-			
+
 			if (!validPassword) {
 				return createErrorResponse(
 					"メールアドレスまたはパスワードが正しくありません",
@@ -274,13 +284,15 @@ describe("Auth API Logic Tests", () => {
 						]),
 					}),
 				}),
-			} as any);
+			} as unknown);
 
 			mockVerifyPassword.mockResolvedValue(true);
-			mockLucia.createSession.mockResolvedValue({ id: "session_id" } as any);
+			mockLucia.createSession.mockResolvedValue({
+				id: "session_id",
+			} as unknown);
 			mockLucia.createSessionCookie.mockReturnValue({
 				serialize: () => "session=abc123",
-			} as any);
+			} as unknown);
 
 			const response = await loginLogic({
 				email: "test@example.com",
@@ -311,7 +323,7 @@ describe("Auth API Logic Tests", () => {
 						limit: vi.fn().mockResolvedValue([]),
 					}),
 				}),
-			} as any);
+			} as unknown);
 
 			const response = await loginLogic({
 				email: "nonexistent@example.com",
@@ -320,7 +332,9 @@ describe("Auth API Logic Tests", () => {
 
 			expect(response.status).toBe(401);
 			const data = await response.json();
-			expect(data.message).toBe("メールアドレスまたはパスワードが正しくありません");
+			expect(data.message).toBe(
+				"メールアドレスまたはパスワードが正しくありません",
+			);
 		});
 
 		it("should return error for invalid password", async () => {
@@ -337,7 +351,7 @@ describe("Auth API Logic Tests", () => {
 						]),
 					}),
 				}),
-			} as any);
+			} as unknown);
 
 			mockVerifyPassword.mockResolvedValue(false);
 
@@ -348,7 +362,9 @@ describe("Auth API Logic Tests", () => {
 
 			expect(response.status).toBe(401);
 			const data = await response.json();
-			expect(data.message).toBe("メールアドレスまたはパスワードが正しくありません");
+			expect(data.message).toBe(
+				"メールアドレスまたはパスワードが正しくありません",
+			);
 		});
 	});
 
@@ -373,7 +389,7 @@ describe("Auth API Logic Tests", () => {
 			mockLucia.invalidateSession.mockResolvedValue();
 			mockLucia.createBlankSessionCookie.mockReturnValue({
 				serialize: () => "session=; Max-Age=0",
-			} as any);
+			} as unknown);
 
 			const response = await logoutLogic("session=abc123");
 

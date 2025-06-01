@@ -7,10 +7,7 @@ describe("TRPC API Routes", () => {
 			const caller = trpcRouter.createCaller({});
 			const result = await caller.people.list();
 
-			expect(result).toEqual([
-				{ name: "John Doe" },
-				{ name: "Jane Doe" },
-			]);
+			expect(result).toEqual([{ name: "John Doe" }, { name: "Jane Doe" }]);
 		});
 
 		it("should return an array", async () => {
@@ -25,10 +22,10 @@ describe("TRPC API Routes", () => {
 			const caller = trpcRouter.createCaller({});
 			const result = await caller.people.list();
 
-			result.forEach((person) => {
+			for (const person of result) {
 				expect(person).toHaveProperty("name");
 				expect(typeof person.name).toBe("string");
-			});
+			}
 		});
 	});
 
