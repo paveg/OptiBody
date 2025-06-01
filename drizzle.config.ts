@@ -1,12 +1,12 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit';
 
-export default {
+export default defineConfig({
   schema: './src/lib/database/schema.ts',
   out: './drizzle',
-  driver: 'pg',
+  dialect: 'postgresql',
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL || 'postgresql://optibody:optibody_dev_password@localhost:5432/optibody',
+    url: process.env.DATABASE_URL || 'postgresql://optibody:optibody_dev_password@localhost:5432/optibody',
   },
   verbose: true,
   strict: true,
-} satisfies Config;
+});

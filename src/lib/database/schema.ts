@@ -1,40 +1,48 @@
-import { pgTable, text, timestamp, real, integer, uuid, bigint } from 'drizzle-orm/pg-core';
+import {
+	bigint,
+	integer,
+	pgTable,
+	real,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 
 // ユーザーテーブル
-export const users = pgTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').unique().notNull(),
-  username: text('username').unique().notNull(),
-  hashedPassword: text('hashed_password').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const users = pgTable("users", {
+	id: text("id").primaryKey(),
+	email: text("email").unique().notNull(),
+	username: text("username").unique().notNull(),
+	hashedPassword: text("hashed_password").notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // セッションテーブル
-export const sessions = pgTable('sessions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: timestamp('expires_at', {
-    withTimezone: true,
-    mode: 'date'
-  }).notNull(),
+export const sessions = pgTable("sessions", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	expiresAt: timestamp("expires_at", {
+		withTimezone: true,
+		mode: "date",
+	}).notNull(),
 });
 
 // ユーザーメトリクステーブル
-export const userMetrics = pgTable('user_metrics', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  height: real('height'), // cm
-  weight: real('weight'), // kg
-  age: integer('age'),
-  gender: text('gender'),
-  activityLevel: text('activity_level'),
-  bodyFatPercentage: real('body_fat_percentage'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+export const userMetrics = pgTable("user_metrics", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	height: real("height"), // cm
+	weight: real("weight"), // kg
+	age: integer("age"),
+	gender: text("gender"),
+	activityLevel: text("activity_level"),
+	bodyFatPercentage: real("body_fat_percentage"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Type exports

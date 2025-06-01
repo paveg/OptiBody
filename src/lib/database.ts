@@ -1,14 +1,19 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './database/schema';
-
-// 環境変数からデータベースURLを取得
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://optibody:optibody_dev_password@localhost:5432/optibody';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./database/schema";
+import { env } from "./env";
 
 // PostgreSQL接続の作成
-const client = postgres(DATABASE_URL);
+const client = postgres(env.DATABASE_URL, {
+	max: 10,
+	idle_timeout: 20,
+	connect_timeout: 10,
+});
 
 // Drizzle ORMインスタンスの作成
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, {
+	schema,
+	logger: env.NODE_ENV === "development",
+});
 
 export default db;

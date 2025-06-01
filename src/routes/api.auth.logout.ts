@@ -1,27 +1,23 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api';
-import { lucia } from '~/lib/auth';
+import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
+import { lucia } from "~/lib/auth";
 
-export const Route = createAPIFileRoute('/api/auth/logout')({
-  POST: async ({ request }) => {
-    const sessionId = lucia.readSessionCookie(request.headers.get('cookie') ?? '');
-    
-    if (!sessionId) {
-      return Response.json(
-        { message: 'ログインしていません' },
-        { status: 401 }
-      );
-    }
+export const Route = createAPIFileRoute("/api/auth/logout")({
+	POST: async ({ request }) => {
+		const sessionId = lucia.readSessionCookie(
+			request.headers.get("cookie") ?? "",
+		);
 
-    await lucia.invalidateSession(sessionId);
+		if (!sessionId) {
+			return createErrorResponse("ログインしていません", 401);
+		}
 
-    const blankSessionCookie = lucia.createBlankSessionCookie();
+		await lucia.invalidateSession(sessionId);
 
-    return new Response(JSON.stringify({ message: 'ログアウトしました' }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Set-Cookie': blankSessionCookie.serialize(),
-      },
-    });
-  },
+		const blankSessionCookie = lucia.createBlankSessionCookie();
+
+		return createJSONResponse({ message: "ログアウトしました" }, 200, {
+			"Set-Cookie": blankSessionCookie.serialize(),
+		});
+	},
 });
