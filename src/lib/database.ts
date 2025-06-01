@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "./database/schema";
 
 // Cloudflare D1 binding取得
@@ -12,7 +13,9 @@ function getD1Database() {
 }
 
 // Drizzle ORMインスタンスの作成
-export function createDb(d1Database?: D1Database) {
+export function createDb(
+	d1Database?: D1Database,
+): DrizzleD1Database<typeof schema> {
 	if (d1Database) {
 		return drizzle(d1Database, { schema });
 	}
@@ -32,7 +35,8 @@ export const db = (() => {
 		return createDb();
 	} catch {
 		// ビルド時にはD1が利用できないため、nullを返す
-		return null as any;
+		// これは開発時のみ使用され、本番環境では常にD1が提供される
+		return {} as DrizzleD1Database<typeof schema>;
 	}
 })();
 
