@@ -4,10 +4,17 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 	GET: async ({ request }) => {
 		try {
 			// 基本的な動作確認
+			const global = globalThis as any;
 			const env = {
 				NODE_ENV: process.env.NODE_ENV,
 				SESSION_SECRET_EXISTS: !!process.env.SESSION_SECRET,
-				DB_EXISTS: !!(globalThis as any).DB,
+				DB_EXISTS: !!global.DB,
+				// 利用可能なグローバル変数を確認
+				AVAILABLE_GLOBALS: Object.keys(global).filter(key => 
+					key.includes('DB') || key.includes('database') || key.toUpperCase() === key
+				),
+				// CloudflareWorkerのコンテキストを確認
+				CF_CONTEXT: !!global.cloudflare,
 			};
 
 			return new Response(JSON.stringify({
