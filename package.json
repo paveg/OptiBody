@@ -11,11 +11,12 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "db:push": "drizzle-kit push:pg",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:migrate": "drizzle-kit migrate:pg",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:up": "docker compose up -d"
+    "db:up": "docker compose up -d",
+    "db:init": "tsx scripts/init-db.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
@@ -43,6 +44,7 @@
     "argon2": "^0.43.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.1",
     "lucia": "^3.2.2",
@@ -66,6 +68,7 @@
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^26.0.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.7.2",
     "vite": "^6.1.0",
     "vitest": "^3.0.5",

@@ -1,27 +1,27 @@
-import { lucia } from '../auth';
-import type { Session, User } from 'lucia';
+import type { Session, User } from "lucia";
+import { lucia } from "../auth";
 
 export interface AuthContext {
-  user: User | null;
-  session: Session | null;
+	user: User | null;
+	session: Session | null;
 }
 
 export async function validateRequest(
-  cookieHeader: string | null
+	cookieHeader: string | null,
 ): Promise<AuthContext> {
-  const sessionId = lucia.readSessionCookie(cookieHeader ?? '');
-  
-  if (!sessionId) {
-    return {
-      user: null,
-      session: null,
-    };
-  }
+	const sessionId = lucia.readSessionCookie(cookieHeader ?? "");
 
-  const result = await lucia.validateSession(sessionId);
-  
-  return {
-    user: result.user,
-    session: result.session,
-  };
+	if (!sessionId) {
+		return {
+			user: null,
+			session: null,
+		};
+	}
+
+	const result = await lucia.validateSession(sessionId);
+
+	return {
+		user: result.user,
+		session: result.session,
+	};
 }
