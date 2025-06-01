@@ -1,5 +1,4 @@
 import { drizzle } from "drizzle-orm/d1";
-import { localDb } from "./database-local";
 import * as schema from "./database/schema";
 
 // Cloudflare D1 binding取得
@@ -9,7 +8,6 @@ function getD1Database() {
 		return globalThis.DB;
 	}
 
-	// 開発環境では、ローカルSQLiteを使用
 	return null;
 }
 
@@ -24,11 +22,18 @@ export function createDb(d1Database?: D1Database) {
 		return drizzle(d1, { schema });
 	}
 
-	// ローカル開発環境では、SQLiteを使用
-	return localDb;
+	// D1が利用できない場合はエラー
+	throw new Error("D1 database connection required");
 }
 
-// デフォルトのDBインスタンス（ローカル開発用）
-export const db = createDb();
+// デフォルトのDBインスタンス（本番環境ではnullになる可能性がある）
+export const db = (() => {
+	try {
+		return createDb();
+	} catch {
+		// ビルド時にはD1が利用できないため、nullを返す
+		return null as any;
+	}
+})();
 
 export default db;

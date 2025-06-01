@@ -10,6 +10,9 @@ const config = defineConfig({
   server: {
     preset: 'cloudflare-pages',
     unenv: cloudflare,
+    rollupConfig: {
+      external: ['better-sqlite3'],
+    },
   },
   vite: {
     plugins: [
@@ -19,6 +22,11 @@ const config = defineConfig({
       }),
       tailwindcss(),
     ],
+    build: {
+      rollupOptions: {
+        external: ['better-sqlite3'],
+      },
+    },
   },
 })
 
