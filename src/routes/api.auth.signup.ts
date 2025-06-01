@@ -2,9 +2,10 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { eq, or } from "drizzle-orm";
 import { generateId } from "lucia";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
-import { hashPassword, lucia } from "~/lib/auth";
-import { db } from "~/lib/database";
+import { createLucia, hashPassword } from "~/lib/auth";
+import { createDb } from "~/lib/database";
 import { users } from "~/lib/database/schema";
+import type { CloudflareGlobal } from "~/types/cloudflare";
 
 export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 	POST: async ({ request }) => {
@@ -32,6 +33,11 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 					"username",
 				);
 			}
+
+			// Cloudflare D1データベースを取得
+			const d1Database = (globalThis as CloudflareGlobal).DB;
+			const db = createDb(d1Database);
+			const lucia = createLucia(d1Database);
 
 			// 既存ユーザーのチェック
 			const existingUser = await db

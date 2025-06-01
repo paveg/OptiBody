@@ -1,9 +1,14 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
-import { lucia } from "~/lib/auth";
+import { createLucia } from "~/lib/auth";
+import type { CloudflareGlobal } from "~/types/cloudflare";
 
 export const APIRoute = createAPIFileRoute("/api/auth/logout")({
 	POST: async ({ request }) => {
+		// Cloudflare D1データベースを取得
+		const d1Database = (globalThis as CloudflareGlobal).DB;
+		const lucia = createLucia(d1Database);
+
 		const sessionId = lucia.readSessionCookie(
 			request.headers.get("cookie") ?? "",
 		);

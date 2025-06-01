@@ -1,0 +1,30 @@
+name = "optibody"
+compatibility_date = "2024-12-01"
+
+# D1 Database bindings
+[[d1_databases]]
+binding = "DB"
+database_name = "optibody-db"
+database_id = "your-database-id-here"
+
+[env.production]
+name = "optibody"
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "optibody-db-prod"
+database_id = "e44df8df-b756-45e0-a499-bc4784b41bcd"
+# Environment variables are set in Cloudflare Pages Dashboard
+# Required: SESSION_SECRET, NODE_ENV=production
+
+[env.preview]
+name = "optibody-preview"
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "optibody-db-preview"
+database_id = "082869c0-603e-4952-b14d-2bc479e07c3c"
+# Environment variables are set in Cloudflare Pages Dashboard
+# Required: SESSION_SECRET, NODE_ENV=production
+
+# Cloudflare Pages configuration
+pages_build_output_dir = ".output/public"
+

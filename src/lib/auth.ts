@@ -1,33 +1,32 @@
-import { PostgresJsAdapter } from "@lucia-auth/adapter-postgresql";
+import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
 import { Lucia, TimeSpan } from "lucia";
-import postgres from "postgres";
+import { createDb } from "./database";
 import { sessions, users } from "./database/schema";
 import type { User } from "./database/schema";
-import { env } from "./env";
 
-// PostgreSQL接続の作成（Lucia専用）
-const sql = postgres(env.DATABASE_URL);
+// Lucia認証用のadapter作成関数
+export function createLucia(d1Database?: D1Database) {
+	const db = createDb(d1Database);
+	const adapter = new DrizzleSQLiteAdapter(db, sessions, users);
 
-// Lucia認証の設定
-const adapter = new PostgresJsAdapter(sql, {
-	user: "users",
-	session: "sessions",
-});
-
-export const lucia = new Lucia(adapter, {
-	sessionCookie: {
-		attributes: {
-			secure: process.env.NODE_ENV === "production",
+	return new Lucia(adapter, {
+		sessionCookie: {
+			attributes: {
+				secure: process.env.NODE_ENV === "production",
+			},
 		},
-	},
-	sessionExpiresIn: new TimeSpan(30, "d"), // 30日間
-	getUserAttributes: (attributes) => {
-		return {
-			email: attributes.email,
-			username: attributes.username,
-		};
-	},
-});
+		sessionExpiresIn: new TimeSpan(30, "d"), // 30日間
+		getUserAttributes: (attributes) => {
+			return {
+				email: attributes.email,
+				username: attributes.username,
+			};
+		},
+	});
+}
+
+// デフォルトのLuciaインスタンス（開発用）
+export const lucia = createLucia();
 
 // TypeScript用の型定義
 declare module "lucia" {

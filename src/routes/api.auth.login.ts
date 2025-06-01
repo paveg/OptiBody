@@ -1,9 +1,10 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { eq } from "drizzle-orm";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
-import { lucia, verifyPassword } from "~/lib/auth";
-import { db } from "~/lib/database";
+import { createLucia, verifyPassword } from "~/lib/auth";
+import { createDb } from "~/lib/database";
 import { users } from "~/lib/database/schema";
+import type { CloudflareGlobal } from "~/types/cloudflare";
 
 export const APIRoute = createAPIFileRoute("/api/auth/login")({
 	POST: async ({ request }) => {
@@ -14,6 +15,11 @@ export const APIRoute = createAPIFileRoute("/api/auth/login")({
 			if (!email || !password) {
 				return createErrorResponse("メールアドレスとパスワードは必須です", 400);
 			}
+
+			// Cloudflare D1データベースを取得
+			const d1Database = (globalThis as CloudflareGlobal).DB;
+			const db = createDb(d1Database);
+			const lucia = createLucia(d1Database);
 
 			// ユーザーを検索
 			const user = await db
