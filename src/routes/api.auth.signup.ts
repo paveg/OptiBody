@@ -7,10 +7,14 @@ import { requireDatabase } from "~/lib/database";
 import { users } from "~/lib/database/schema";
 
 export const APIRoute = createAPIFileRoute("/api/auth/signup")({
-	POST: async ({ request, context }) => {
+	POST: async ({ request }) => {
 		try {
 			const body = await request.json();
-			const { email, username, password } = body;
+			const { email, username, password } = body as {
+				email: string;
+				username: string;
+				password: string;
+			};
 
 			// バリデーション
 			if (!email || !username || !password) {
@@ -37,7 +41,9 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 			const db = requireDatabase();
 
 			// D1バインディングを取得してLuciaを初期化
-			const d1Database = globalThis.__env__?.DB || globalThis.DB;
+			const d1Database =
+				(globalThis as { __env__?: { DB: D1Database }; DB?: D1Database })
+					.__env__?.DB || (globalThis as { DB?: D1Database }).DB;
 			if (!d1Database) {
 				return createErrorResponse("データベースに接続できませんでした", 503);
 			}
@@ -90,20 +96,9 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 				"Set-Cookie": sessionCookie.serialize(),
 			});
 		} catch (error) {
-			console.error("Signup error:", error);
-			// 開発中のデバッグ用: 詳細なエラー情報を返す
-			return new Response(
-				JSON.stringify({
-					success: false,
-					message: "サーバーエラーが発生しました",
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-				}),
-				{
-					status: 500,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
+			// Log error without exposing stack trace details
+			console.error("Signup error occurred");
+			return createErrorResponse("サーバーエラーが発生しました", 500);
 		}
 	},
 });

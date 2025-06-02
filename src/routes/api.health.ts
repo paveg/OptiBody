@@ -2,7 +2,7 @@ import { getDatabaseInstance } from "@/lib/database";
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 
 export const APIRoute = createAPIFileRoute("/api/health")({
-	GET: async ({ request, context }) => {
+	GET: async () => {
 		try {
 			// 基本的な動作確認
 			const global = globalThis as Record<string, unknown> & {
@@ -55,7 +55,9 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 							query_success: !!result,
 							result: result,
 							d1_source: global.__env__?.DB ? "__env__.DB" : "globalThis.DB",
-							tables: tablesResult.results.map((t: { name: string }) => t.name),
+							tables: tablesResult.results.map(
+								(t) => (t as { name: string }).name,
+							),
 							tables_count: tablesResult.results.length,
 						};
 					} else {
@@ -74,7 +76,7 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 			} catch (error) {
 				dbTest = {
 					connection: false,
-					error: error instanceof Error ? error.message : String(error),
+					error: "Database connection failed",
 				};
 			}
 
@@ -94,8 +96,7 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 			return new Response(
 				JSON.stringify({
 					status: "error",
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
+					error: "Internal server error",
 				}),
 				{
 					status: 500,
