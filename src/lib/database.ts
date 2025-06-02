@@ -18,7 +18,9 @@ function getD1Database(): D1Database | null {
 }
 
 // Drizzle ORMインスタンスの作成（常にD1Databaseを要求）
-export function createDatabase(d1Database: D1Database): DrizzleD1Database<typeof schema> {
+export function createDatabase(
+	d1Database: D1Database,
+): DrizzleD1Database<typeof schema> {
 	return drizzle(d1Database, { schema });
 }
 
@@ -35,13 +37,17 @@ export function getDatabaseInstance(): DrizzleD1Database<typeof schema> | null {
 export function requireDatabase(): DrizzleD1Database<typeof schema> {
 	const db = getDatabaseInstance();
 	if (!db) {
-		throw new Error("D1 database not available. Ensure D1 binding is properly configured.");
+		throw new Error(
+			"D1 database not available. Ensure D1 binding is properly configured.",
+		);
 	}
 	return db;
 }
 
 // レガシー互換性のためのcreateDb関数（非推奨）
-export function createDb(d1Database?: D1Database): DrizzleD1Database<typeof schema> {
+export function createDb(
+	d1Database?: D1Database,
+): DrizzleD1Database<typeof schema> {
 	if (d1Database) {
 		return createDatabase(d1Database);
 	}

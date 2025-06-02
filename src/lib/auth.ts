@@ -31,7 +31,7 @@ export function getLucia(): Lucia | null {
 	if (!db) {
 		return null;
 	}
-	
+
 	// D1Database インスタンスを直接取得する必要があるため、
 	// この実装は一時的な回避策です
 	try {
@@ -43,7 +43,7 @@ export function getLucia(): Lucia | null {
 	} catch {
 		// Fallback: database instance から D1 を抽出できない場合
 	}
-	
+
 	return null;
 }
 
@@ -52,7 +52,7 @@ export function createLuciaLegacy(d1Database?: D1Database) {
 	if (d1Database) {
 		return createLucia(d1Database);
 	}
-	
+
 	const lucia = getLucia();
 	if (!lucia) {
 		throw new Error("Cannot create Lucia instance: D1 database not available");
@@ -77,35 +77,35 @@ interface DatabaseUserAttributes {
 export async function hashPassword(password: string): Promise<string> {
 	const encoder = new TextEncoder();
 	const data = encoder.encode(password);
-	
+
 	// ソルトを生成
 	const salt = crypto.getRandomValues(new Uint8Array(16));
-	
+
 	// PBKDF2でハッシュ化
 	const key = await crypto.subtle.importKey(
 		"raw",
 		data,
 		{ name: "PBKDF2" },
 		false,
-		["deriveBits"]
+		["deriveBits"],
 	);
-	
+
 	const bits = await crypto.subtle.deriveBits(
 		{
 			name: "PBKDF2",
 			salt: salt,
 			iterations: 100000,
-			hash: "SHA-256"
+			hash: "SHA-256",
 		},
 		key,
-		256
+		256,
 	);
-	
+
 	// ソルトとハッシュを結合してBase64エンコード
 	const combined = new Uint8Array(salt.length + bits.byteLength);
 	combined.set(salt);
 	combined.set(new Uint8Array(bits), salt.length);
-	
+
 	return btoa(String.fromCharCode(...combined));
 }
 
@@ -116,45 +116,47 @@ export async function verifyPassword(
 	try {
 		const encoder = new TextEncoder();
 		const data = encoder.encode(password);
-		
+
 		// Base64デコードして、ソルトとハッシュを分離
-		const combined = Uint8Array.from(atob(hashedPassword), c => c.charCodeAt(0));
+		const combined = Uint8Array.from(atob(hashedPassword), (c) =>
+			c.charCodeAt(0),
+		);
 		const salt = combined.slice(0, 16);
 		const storedHash = combined.slice(16);
-		
+
 		// 入力パスワードをハッシュ化
 		const key = await crypto.subtle.importKey(
 			"raw",
 			data,
 			{ name: "PBKDF2" },
 			false,
-			["deriveBits"]
+			["deriveBits"],
 		);
-		
+
 		const bits = await crypto.subtle.deriveBits(
 			{
 				name: "PBKDF2",
 				salt: salt,
 				iterations: 100000,
-				hash: "SHA-256"
+				hash: "SHA-256",
 			},
 			key,
-			256
+			256,
 		);
-		
+
 		const computedHash = new Uint8Array(bits);
-		
+
 		// 比較
 		if (computedHash.length !== storedHash.length) {
 			return false;
 		}
-		
+
 		for (let i = 0; i < computedHash.length; i++) {
 			if (computedHash[i] !== storedHash[i]) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	} catch {
 		return false;

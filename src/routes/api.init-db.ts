@@ -5,15 +5,18 @@ export const APIRoute = createAPIFileRoute("/api/init-db")({
 		try {
 			// アプリケーションが使用しているD1インスタンスを取得
 			const d1Instance = globalThis.__env__?.DB || globalThis.DB;
-			
+
 			if (!d1Instance) {
-				return new Response(JSON.stringify({
-					success: false,
-					error: "D1 database not available"
-				}), {
-					status: 503,
-					headers: { "Content-Type": "application/json" }
-				});
+				return new Response(
+					JSON.stringify({
+						success: false,
+						error: "D1 database not available",
+					}),
+					{
+						status: 503,
+						headers: { "Content-Type": "application/json" },
+					},
+				);
 			}
 
 			// スキーマを直接実行
@@ -68,29 +71,36 @@ export const APIRoute = createAPIFileRoute("/api/init-db")({
 			await d1Instance.prepare(createUsersUsernameIndex).run();
 
 			// 検証: テーブルが作成されたか確認
-			const tablesResult = await d1Instance.prepare(
-				"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions', 'user_metrics')"
-			).all();
+			const tablesResult = await d1Instance
+				.prepare(
+					"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions', 'user_metrics')",
+				)
+				.all();
 
-			return new Response(JSON.stringify({
-				success: true,
-				message: "Database schema initialized successfully",
-				tables_created: tablesResult.results.map((t: any) => t.name),
-				tables_count: tablesResult.results.length
-			}), {
-				status: 200,
-				headers: { "Content-Type": "application/json" }
-			});
-
+			return new Response(
+				JSON.stringify({
+					success: true,
+					message: "Database schema initialized successfully",
+					tables_created: tablesResult.results.map((t: any) => t.name),
+					tables_count: tablesResult.results.length,
+				}),
+				{
+					status: 200,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
 		} catch (error) {
-			return new Response(JSON.stringify({
-				success: false,
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined
-			}), {
-				status: 500,
-				headers: { "Content-Type": "application/json" }
-			});
+			return new Response(
+				JSON.stringify({
+					success: false,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				}),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
 		}
 	},
 });

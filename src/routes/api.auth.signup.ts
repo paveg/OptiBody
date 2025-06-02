@@ -35,7 +35,7 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 
 			// データベースインスタンスを取得
 			const db = requireDatabase();
-			
+
 			// D1バインディングを取得してLuciaを初期化
 			const d1Database = globalThis.__env__?.DB || globalThis.DB;
 			if (!d1Database) {
@@ -92,15 +92,18 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 		} catch (error) {
 			console.error("Signup error:", error);
 			// 開発中のデバッグ用: 詳細なエラー情報を返す
-			return new Response(JSON.stringify({
-				success: false,
-				message: "サーバーエラーが発生しました",
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined
-			}), {
-				status: 500,
-				headers: { "Content-Type": "application/json" }
-			});
+			return new Response(
+				JSON.stringify({
+					success: false,
+					message: "サーバーエラーが発生しました",
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				}),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
 		}
 	},
 });

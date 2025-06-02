@@ -17,7 +17,7 @@ export const APIRoute = createAPIFileRoute("/api/auth/login")({
 
 			// データベースインスタンスを取得
 			const db = requireDatabase();
-			
+
 			// D1バインディングを取得してLuciaを初期化
 			const d1Database = globalThis.__env__?.DB || globalThis.DB;
 			if (!d1Database) {
