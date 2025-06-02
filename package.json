@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vinxi dev",
+    "dev": "wrangler pages dev dist --d1=DB --port 3000 --live-reload",
+    "dev:build": "pnpm build && pnpm dev",
+    "dev:ui": "vinxi dev",
     "start": "vinxi start",
     "build": "vinxi build",
     "serve": "vite preview",
@@ -13,13 +15,10 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
+    "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate --config=drizzle.config.local.ts",
-    "db:generate:remote": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio --config=drizzle.config.local.ts",
-    "db:studio:remote": "drizzle-kit studio",
-    "db:init": "tsx scripts/init-db.ts"
+    "db:studio": "drizzle-kit studio",
+    "db:migrate:local": "tsx scripts/migrate-local.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",

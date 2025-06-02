@@ -1,33 +1,77 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { getDatabaseInstance } from "@/lib/database";
 
 export const APIRoute = createAPIFileRoute("/api/health")({
 	GET: async ({ request, context }) => {
 		try {
 			// 基本的な動作確認
 			const global = globalThis as any;
-			const ctx = context as any;
 			
 			const env = {
 				NODE_ENV: process.env.NODE_ENV,
 				SESSION_SECRET_EXISTS: !!process.env.SESSION_SECRET,
 				// グローバルからのDB
 				GLOBAL_DB_EXISTS: !!global.DB,
-				// コンテキストからのDB
-				CONTEXT_DB_EXISTS: !!(ctx?.cloudflare?.env?.DB),
-				CONTEXT_ENV_KEYS: ctx?.cloudflare?.env ? Object.keys(ctx.cloudflare.env) : [],
+				// WranglerのenvからのDB
+				ENV_DB_EXISTS: !!global.__env__?.DB,
 				// 利用可能なグローバル変数を確認
 				AVAILABLE_GLOBALS: Object.keys(global).filter(key => 
-					key.includes('DB') || key.includes('database') || key.toUpperCase() === key
+					key.includes('DB') || key.includes('database') || key.includes('env')
 				),
-				// CloudflareWorkerのコンテキストを確認
-				CF_CONTEXT: !!global.cloudflare,
-				CONTEXT_STRUCTURE: ctx ? Object.keys(ctx) : [],
+				// Cloudflare関連のグローバル変数
+				CLOUDFLARE_GLOBALS: Object.keys(global).filter(key => 
+					key.toLowerCase().includes('cloudflare') || key.toLowerCase().includes('cf')
+				),
 			};
+
+			// データベース接続のテスト
+			let dbTest = null;
+			try {
+				const db = getDatabaseInstance();
+				if (db) {
+					// 使用可能なD1インスタンスを取得
+					const d1Instance = global.__env__?.DB || global.DB;
+					if (d1Instance) {
+						// 単純なクエリを実行してDBアクセスを確認
+						const result = await d1Instance.prepare('SELECT 1 as test').first();
+						
+						// テーブル存在確認
+						const tablesResult = await d1Instance.prepare(
+							"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions', 'user_metrics')"
+						).all();
+						
+						dbTest = {
+							connection: true,
+							query_success: !!result,
+							result: result,
+							d1_source: global.__env__?.DB ? "__env__.DB" : "globalThis.DB",
+							tables: tablesResult.results.map((t: any) => t.name),
+							tables_count: tablesResult.results.length
+						};
+					} else {
+						dbTest = {
+							connection: false,
+							error: "D1 instance not found in both __env__.DB and globalThis.DB"
+						};
+					}
+				} else {
+					dbTest = {
+						connection: false,
+						error: "Drizzle database instance not available"
+					};
+				}
+			} catch (error) {
+				dbTest = {
+					connection: false,
+					error: error instanceof Error ? error.message : String(error)
+				};
+			}
 
 			return new Response(JSON.stringify({
 				status: "ok",
 				timestamp: new Date().toISOString(),
-				environment: env
+				environment: env,
+				database: dbTest
 			}), {
 				status: 200,
 				headers: { "Content-Type": "application/json" }

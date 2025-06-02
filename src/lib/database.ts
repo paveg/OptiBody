@@ -4,22 +4,12 @@ import * as schema from "./database/schema";
 
 // Cloudflare D1 binding取得
 function getD1Database(): D1Database | null {
-	// TanStack Start context経由でのD1取得を試行
-	try {
-		// @ts-expect-error - getRequestContext is experimental
-		const requestContext = globalThis.getRequestContext?.();
-		if (requestContext?.cloudflare?.env?.DB) {
-			return requestContext.cloudflare.env.DB;
-		}
-	} catch {
-		// TanStack Start context が利用できない場合は継続
-	}
-
 	// Wrangler開発環境では、__env__から取得
 	if (typeof globalThis !== "undefined" && globalThis.__env__?.DB) {
 		return globalThis.__env__.DB;
 	}
-	// Cloudflare Worker環境では、globalThisから取得
+
+	// Cloudflare Worker環境では、globalThis.DBから直接取得
 	if (typeof globalThis !== "undefined" && globalThis.DB) {
 		return globalThis.DB;
 	}

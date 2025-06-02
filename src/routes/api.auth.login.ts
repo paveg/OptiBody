@@ -2,9 +2,8 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { eq } from "drizzle-orm";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
 import { createLucia, verifyPassword } from "~/lib/auth";
-import { createDatabase } from "~/lib/database";
+import { requireDatabase } from "~/lib/database";
 import { users } from "~/lib/database/schema";
-import type { CloudflareGlobal } from "~/types/cloudflare";
 
 export const APIRoute = createAPIFileRoute("/api/auth/login")({
 	POST: async ({ request, context }) => {
@@ -16,20 +15,14 @@ export const APIRoute = createAPIFileRoute("/api/auth/login")({
 				return createErrorResponse("メールアドレスとパスワードは必須です", 400);
 			}
 
-			// Cloudflare D1データベースを取得
-			let d1Database: D1Database | null = null;
+			// データベースインスタンスを取得
+			const db = requireDatabase();
 			
-			// 複数の方法でD1データベースを取得を試行
-			d1Database = context?.cloudflare?.env?.DB || 
-						 context?.env?.DB || 
-						 globalThis.__env__?.DB || 
-						 globalThis.DB;
-
+			// D1バインディングを取得してLuciaを初期化
+			const d1Database = globalThis.__env__?.DB || globalThis.DB;
 			if (!d1Database) {
 				return createErrorResponse("データベースに接続できませんでした", 503);
 			}
-
-			const db = createDatabase(d1Database);
 			const lucia = createLucia(d1Database);
 
 			// ユーザーを検索
