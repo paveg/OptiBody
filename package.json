@@ -23,6 +23,7 @@
     "db:up": "docker compose up -d",
     "db:init": "tsx scripts/init-db.ts",
     "db:d1:init": "tsx scripts/init-d1-local.ts",
+    "db:d1:init:remote": "tsx scripts/init-d1-remote.ts",
     "db:d1:execute": "wrangler d1 execute DB --local"
   },
   "dependencies": {

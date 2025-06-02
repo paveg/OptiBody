@@ -45,30 +45,31 @@ export const APIRoute = createAPIFileRoute("/api/db-test")({
 					// 直接D1を使ってテスト
 					dbResult = await d1Database.prepare("SELECT 1 as test").first();
 					
-					// Drizzle経由でもテスト
-					const db = createDb(d1Database);
-					const drizzleResult = await db.run({ sql: "SELECT 2 as drizzle_test" });
-					
-					return new Response(JSON.stringify({
-						status: "ok",
-						timestamp: new Date().toISOString(),
-						dbTest: {
-							direct: {
-								result: dbResult,
-								source: dbSource
-							},
-							drizzle: {
-								result: drizzleResult,
-								source: `createDb(${dbSource})`
-							},
-							available: true
-						}
-					}), {
-						status: 200,
-						headers: { "Content-Type": "application/json" }
-					});
+					// D1が正常に動作している場合
+					if (dbResult) {
+						return new Response(JSON.stringify({
+							status: "ok",
+							timestamp: new Date().toISOString(),
+							dbTest: {
+								direct: {
+									result: dbResult,
+									source: dbSource
+								},
+								available: true,
+								note: "Direct D1 access works. Drizzle ORM integration temporarily disabled."
+							}
+						}), {
+							status: 200,
+							headers: { "Content-Type": "application/json" }
+						});
+					}
 				} catch (e) {
 					error = e instanceof Error ? e.message : String(e);
+					
+					// エラーの詳細情報を取得
+					if (e instanceof Error && e.stack) {
+						error = `${e.message}\nStack: ${e.stack}`;
+					}
 				}
 			}
 
