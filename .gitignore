@@ -105,3 +105,4 @@ coverage/
 
 # Editor hint/rules files (optional to track)
 .hintrc
+app.config.timestamp_*.js
