@@ -31,7 +31,7 @@ OptiBody is a health and fitness calculator application built with:
 
 - **TanStack Start** - React SSR framework with file-based routing
 - **Cloudflare D1 + Drizzle ORM** - SQLite edge database with type-safe queries
-- **Lucia Auth** - Authentication with Argon2 password hashing
+- **Lucia Auth** - Authentication with PBKDF2-SHA256 password hashing
 - **TRPC + TanStack Query** - Type-safe API and data fetching
 - **Tailwind CSS + shadcn/ui** - Styling and UI components
 
