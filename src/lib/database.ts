@@ -43,13 +43,3 @@ export function requireDatabase(): DrizzleD1Database<typeof schema> {
 	}
 	return db;
 }
-
-// レガシー互換性のためのcreateDb関数（非推奨）
-export function createDb(
-	d1Database?: D1Database,
-): DrizzleD1Database<typeof schema> {
-	if (d1Database) {
-		return createDatabase(d1Database);
-	}
-	return requireDatabase();
-}

@@ -5,7 +5,10 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 	GET: async ({ request, context }) => {
 		try {
 			// 基本的な動作確認
-			const global = globalThis as any;
+			const global = globalThis as Record<string, unknown> & {
+				DB?: D1Database;
+				__env__?: { DB?: D1Database };
+			};
 
 			const env = {
 				NODE_ENV: process.env.NODE_ENV,
@@ -52,7 +55,7 @@ export const APIRoute = createAPIFileRoute("/api/health")({
 							query_success: !!result,
 							result: result,
 							d1_source: global.__env__?.DB ? "__env__.DB" : "globalThis.DB",
-							tables: tablesResult.results.map((t: any) => t.name),
+							tables: tablesResult.results.map((t: { name: string }) => t.name),
 							tables_count: tablesResult.results.length,
 						};
 					} else {
