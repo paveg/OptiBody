@@ -6,7 +6,7 @@ import type { CloudflareGlobal } from "~/types/cloudflare";
 export const APIRoute = createAPIFileRoute("/api/auth/me")({
 	GET: async ({ request }) => {
 		// Cloudflare D1データベースを取得
-		const d1Database = (globalThis as CloudflareGlobal).DB;
+		const d1Database = globalThis.__env__?.DB || globalThis.DB;
 		const { user } = await validateRequest(
 			request.headers.get("cookie"),
 			d1Database,

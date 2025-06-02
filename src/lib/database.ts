@@ -4,7 +4,11 @@ import * as schema from "./database/schema";
 
 // Cloudflare D1 binding取得
 function getD1Database() {
-	// Cloudflare Worker環境では、context.cloudflareから取得
+	// Wrangler開発環境では、__env__から取得
+	if (typeof globalThis !== "undefined" && globalThis.__env__?.DB) {
+		return globalThis.__env__.DB;
+	}
+	// Cloudflare Worker環境では、globalThisから取得
 	if (typeof globalThis !== "undefined" && globalThis.DB) {
 		return globalThis.DB;
 	}

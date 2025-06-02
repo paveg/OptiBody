@@ -6,30 +6,35 @@ export const APIRoute = createAPIFileRoute("/api/db-test")({
 	GET: async ({ request, context }) => {
 		try {
 			// 様々な方法でD1データベースを探す
-			const global = globalThis as any;
-			const ctx = context as any;
+			const global = globalThis;
+			const ctx = context;
 			
 			let dbResult = null;
 			let dbSource = "none";
 			let error = null;
 			let d1Database = null;
 			
-			// 方法1: globalThis.DB
-			if (global.DB) {
+			// 方法1: globalThis.__env__?.DB
+			if (global.__env__?.DB) {
+				d1Database = global.__env__.DB;
+				dbSource = "globalThis.__env__.DB";
+			}
+			// 方法2: globalThis.DB
+			else if (global.DB) {
 				d1Database = global.DB;
 				dbSource = "globalThis.DB";
 			}
-			// 方法2: globalThis.env?.DB
+			// 方法3: globalThis.env?.DB
 			else if (global.env?.DB) {
 				d1Database = global.env.DB;
 				dbSource = "globalThis.env.DB";
 			}
-			// 方法3: context.env?.DB
+			// 方法4: context.env?.DB
 			else if (ctx?.env?.DB) {
 				d1Database = ctx.env.DB;
 				dbSource = "context.env.DB";
 			}
-			// 方法4: context.cloudflare?.env?.DB
+			// 方法5: context.cloudflare?.env?.DB
 			else if (ctx?.cloudflare?.env?.DB) {
 				d1Database = ctx.cloudflare.env.DB;
 				dbSource = "context.cloudflare.env.DB";
@@ -86,9 +91,11 @@ export const APIRoute = createAPIFileRoute("/api/db-test")({
 					debugging: {
 						globalDB: !!global.DB,
 						globalEnvDB: !!global.env?.DB,
+						global__env__DB: !!global.__env__?.DB,
 						contextEnvDB: !!ctx?.env?.DB,
 						contextCloudflareEnvDB: !!ctx?.cloudflare?.env?.DB,
 						envRelatedGlobalKeys: envRelatedKeys,
+						__env__Keys: global.__env__ ? Object.keys(global.__env__) : [],
 						contextKeys: ctx ? Object.keys(ctx) : [],
 						contextEnvKeys: ctx?.env ? Object.keys(ctx.env) : [],
 						requestHeaders: Object.fromEntries(request.headers.entries())

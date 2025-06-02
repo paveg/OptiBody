@@ -35,7 +35,7 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 			}
 
 			// Cloudflare D1データベースを取得
-			const d1Database = (globalThis as CloudflareGlobal).DB;
+			const d1Database = globalThis.__env__?.DB || globalThis.DB;
 			const db = createDb(d1Database);
 			const lucia = createLucia(d1Database);
 

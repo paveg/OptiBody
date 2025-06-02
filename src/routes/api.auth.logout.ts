@@ -6,7 +6,7 @@ import type { CloudflareGlobal } from "~/types/cloudflare";
 export const APIRoute = createAPIFileRoute("/api/auth/logout")({
 	POST: async ({ request }) => {
 		// Cloudflare D1データベースを取得
-		const d1Database = (globalThis as CloudflareGlobal).DB;
+		const d1Database = globalThis.__env__?.DB || globalThis.DB;
 		const lucia = createLucia(d1Database);
 
 		const sessionId = lucia.readSessionCookie(
