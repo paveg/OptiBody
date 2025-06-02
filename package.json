@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
-    "dev:d1": "pnpm build && wrangler pages dev dist --d1 DB --port 3000",
     "start": "vinxi start",
     "build": "vinxi build",
     "serve": "vite preview",
@@ -20,11 +19,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --config=drizzle.config.local.ts",
     "db:studio:remote": "drizzle-kit studio",
-    "db:up": "docker compose up -d",
-    "db:init": "tsx scripts/init-db.ts",
-    "db:d1:init": "tsx scripts/init-d1-local.ts",
-    "db:d1:init:remote": "tsx scripts/init-d1-remote.ts",
-    "db:d1:execute": "wrangler d1 execute DB --local"
+    "db:init": "tsx scripts/init-db.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
@@ -53,7 +48,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
-    "drizzle-orm": "^0.44.1",
+    "drizzle-orm": "^0.40.1",
     "lucia": "^3.2.2",
     "lucide-react": "^0.476.0",
     "react": "^19.0.0",

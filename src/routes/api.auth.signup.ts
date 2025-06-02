@@ -3,12 +3,12 @@ import { eq, or } from "drizzle-orm";
 import { generateId } from "lucia";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
 import { createLucia, hashPassword } from "~/lib/auth";
-import { createDb } from "~/lib/database";
+import { createDatabase } from "~/lib/database";
 import { users } from "~/lib/database/schema";
 import type { CloudflareGlobal } from "~/types/cloudflare";
 
 export const APIRoute = createAPIFileRoute("/api/auth/signup")({
-	POST: async ({ request }) => {
+	POST: async ({ request, context }) => {
 		try {
 			const body = await request.json();
 			const { email, username, password } = body;
@@ -35,8 +35,19 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 			}
 
 			// Cloudflare D1データベースを取得
-			const d1Database = globalThis.__env__?.DB || globalThis.DB;
-			const db = createDb(d1Database);
+			let d1Database: D1Database | null = null;
+			
+			// 複数の方法でD1データベースを取得を試行
+			d1Database = context?.cloudflare?.env?.DB || 
+						 context?.env?.DB || 
+						 globalThis.__env__?.DB || 
+						 globalThis.DB;
+
+			if (!d1Database) {
+				return createErrorResponse("データベースに接続できませんでした", 503);
+			}
+
+			const db = createDatabase(d1Database);
 			const lucia = createLucia(d1Database);
 
 			// 既存ユーザーのチェック
