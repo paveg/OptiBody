@@ -80,7 +80,7 @@ Before deploying to production:
 ## 🛡️ Additional Security Notes
 
 1. **Session Security**: Sessions expire after 30 days automatically
-2. **Password Security**: Uses Argon2 for password hashing
+2. **Password Security**: Uses PBKDF2-SHA256 for password hashing (100,000 iterations)
 3. **Database Security**: D1 bindings provide secure database access
 4. **HTTPS**: Enforced in production via Cloudflare Pages
 5. **Cookie Security**: Secure flag enabled in production
