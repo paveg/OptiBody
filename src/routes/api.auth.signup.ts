@@ -2,15 +2,19 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { eq, or } from "drizzle-orm";
 import { generateId } from "lucia";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
-import { hashPassword, lucia } from "~/lib/auth";
-import { db } from "~/lib/database";
+import { createLucia, hashPassword } from "~/lib/auth";
+import { requireDatabase } from "~/lib/database";
 import { users } from "~/lib/database/schema";
 
 export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 	POST: async ({ request }) => {
 		try {
 			const body = await request.json();
-			const { email, username, password } = body;
+			const { email, username, password } = body as {
+				email: string;
+				username: string;
+				password: string;
+			};
 
 			// バリデーション
 			if (!email || !username || !password) {
@@ -32,6 +36,18 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 					"username",
 				);
 			}
+
+			// データベースインスタンスを取得
+			const db = requireDatabase();
+
+			// D1バインディングを取得してLuciaを初期化
+			const d1Database =
+				(globalThis as { __env__?: { DB: D1Database }; DB?: D1Database })
+					.__env__?.DB || (globalThis as { DB?: D1Database }).DB;
+			if (!d1Database) {
+				return createErrorResponse("データベースに接続できませんでした", 503);
+			}
+			const lucia = createLucia(d1Database);
 
 			// 既存ユーザーのチェック
 			const existingUser = await db
@@ -80,7 +96,8 @@ export const APIRoute = createAPIFileRoute("/api/auth/signup")({
 				"Set-Cookie": sessionCookie.serialize(),
 			});
 		} catch (error) {
-			console.error("Signup error:", error);
+			// Log error without exposing stack trace details
+			console.error("Signup error occurred");
 			return createErrorResponse("サーバーエラーが発生しました", 500);
 		}
 	},

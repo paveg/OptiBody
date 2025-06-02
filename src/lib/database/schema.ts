@@ -1,38 +1,30 @@
-import {
-	bigint,
-	integer,
-	pgTable,
-	real,
-	text,
-	timestamp,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // ユーザーテーブル
-export const users = pgTable("users", {
+export const users = sqliteTable("users", {
 	id: text("id").primaryKey(),
 	email: text("email").unique().notNull(),
 	username: text("username").unique().notNull(),
 	hashedPassword: text("hashed_password").notNull(),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	createdAt: integer("created_at").default(sql`(unixepoch())`).notNull(),
+	updatedAt: integer("updated_at").default(sql`(unixepoch())`).notNull(),
 });
 
 // セッションテーブル
-export const sessions = pgTable("sessions", {
+export const sessions = sqliteTable("sessions", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	expiresAt: timestamp("expires_at", {
-		withTimezone: true,
-		mode: "date",
-	}).notNull(),
+	expiresAt: integer("expires_at").notNull(),
 });
 
 // ユーザーメトリクステーブル
-export const userMetrics = pgTable("user_metrics", {
-	id: uuid("id").defaultRandom().primaryKey(),
+export const userMetrics = sqliteTable("user_metrics", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
 	userId: text("user_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
@@ -42,7 +34,7 @@ export const userMetrics = pgTable("user_metrics", {
 	gender: text("gender"),
 	activityLevel: text("activity_level"),
 	bodyFatPercentage: real("body_fat_percentage"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
+	createdAt: integer("created_at").default(sql`(unixepoch())`).notNull(),
 });
 
 // Type exports

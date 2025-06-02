@@ -1,9 +1,16 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { createErrorResponse, createJSONResponse } from "~/lib/api-utils";
-import { lucia } from "~/lib/auth";
+import { createLucia } from "~/lib/auth";
 
 export const APIRoute = createAPIFileRoute("/api/auth/logout")({
-	POST: async ({ request }) => {
+	POST: async ({ request, context }) => {
+		// D1バインディングを取得してLuciaを初期化
+		const d1Database = globalThis.__env__?.DB || globalThis.DB;
+		if (!d1Database) {
+			return createErrorResponse("データベースに接続できませんでした", 503);
+		}
+		const lucia = createLucia(d1Database);
+
 		const sessionId = lucia.readSessionCookie(
 			request.headers.get("cookie") ?? "",
 		);

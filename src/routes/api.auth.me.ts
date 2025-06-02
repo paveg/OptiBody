@@ -4,7 +4,12 @@ import { validateRequest } from "~/lib/auth/middleware";
 
 export const APIRoute = createAPIFileRoute("/api/auth/me")({
 	GET: async ({ request }) => {
-		const { user } = await validateRequest(request.headers.get("cookie"));
+		// Cloudflare D1データベースを取得
+		const d1Database = globalThis.__env__?.DB || globalThis.DB;
+		const { user } = await validateRequest(
+			request.headers.get("cookie"),
+			d1Database,
+		);
 
 		if (!user) {
 			return createErrorResponse("認証が必要です", 401);
